@@ -7,7 +7,8 @@ var express = require('express'),
     lessMW = require('less-middleware'),
     routes = require('./routes'),
     fs = require('fs'),
-    config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+    config = JSON.parse(fs.readFileSync('./config.json', 'utf8')),
+    mpd = require('mpdsocket');
 
 var app = module.exports = express.createServer();
 
@@ -37,6 +38,7 @@ app.configure('production', function(){
 
 app.get('/', routes.index);
 
+// Start listening
 app.listen(config.listen, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
