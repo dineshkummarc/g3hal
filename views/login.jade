@@ -1,0 +1,19 @@
+div.row
+  div.span12
+
+    - if ('undefined' !== typeof errors && errors.length)
+      ul#errors
+        - each error in errors
+          li.error= error
+    form(action='/login', method='post')
+      fieldset
+        legend Login
+        div.control-group
+          label.control-label(for=everyauth.password.loginFormFieldName) Login
+          div.controls
+            input.input-xlarge(type='text', name=everyauth.password.loginFormFieldName, value=login)
+        div.control-group
+          label.control-group(for=everyauth.password.passwordFormFieldName) Password
+          input.input-xlarge(type='password', name=everyauth.password.passwordFormFieldName)
+        div.form-actions
+          button.btn.btn-primary(type='submit') Login

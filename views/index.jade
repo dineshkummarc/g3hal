@@ -1,2 +1,28 @@
-h1= title
-p Welcome to #{title}
+.row
+	.span4
+		.well
+			h1 G3 HAL
+			p 
+				| Welcome to G3 HAL. You can enable/disable HAL from here
+				| as well as see a basic status of what is currently
+				| happening on HAL.
+
+			a.btn.btn-inverse(href='/logout') &laquo; Logout
+	.span8
+		#controls.well
+			p
+				strong Current state: 
+				span#state Unknown
+			p
+				strong Currently playing: 
+				span#song Nothing
+
+			#progress.progress.progress-info.progress-striped.active
+				.bar
+
+			p
+				button#play.btn.btn-success.btn-large.disabled Play
+				&nbsp;
+				button#update.btn.btn-warning.btn-large.disabled Update DB
+				button#stop.btn.btn-danger.btn-large.disabled.pull-right Stop
+

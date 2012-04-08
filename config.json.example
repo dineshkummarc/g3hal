@@ -1,7 +1,8 @@
 {
 	"mpd": {
 		"host": "localhost",
-		"port": 6600
+		"port": 6600,
+		"password": "your password here"
 	},
 	"listen": 3000,
 	"session_key": "create custom session key here"
