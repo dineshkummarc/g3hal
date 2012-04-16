@@ -1,7 +1,9 @@
-
 /**
  * Module dependencies.
  */
+
+// Change dir to the same as the app
+process.chdir(__dirname);
 
 var express = require('express'),
     lessMW = require('less-middleware'),
