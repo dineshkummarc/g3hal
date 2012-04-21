@@ -133,7 +133,7 @@ app.get('/', routes.index);
 // MPD
 app.all('/mpd/*', function(req, res, next) {
   if(mpd.can_send) {
-    mpd.socket.setTimeout(20000, function() {
+    mpd.socket.setTimeout(60000, function() {
       res.send(408);
       console.log('MPD: timed out');
       onMPDFail();
