@@ -138,8 +138,7 @@ $(function() {
 	});
 
 	if($('#play').length > 0) {
-		updateSongInfo();
-		setTimeout(updateSongInfo, 10000);
+		setInterval(updateSongInfo, 10000);
 	}
 
 })
