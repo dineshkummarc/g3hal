@@ -18,11 +18,35 @@ var express = require('express'),
 
 // Set up MPD hooks
 
+function onMPDFail() {
+  mpd.can_send = false;
+  if(mpd.socket && mpd.isOpen) {
+    mpd.socket.end();
+    mpd.isOpen = false;
+  }
+  setTimeout(function() {
+    setupMPDHooks();
+    mpd.can_send = true;
+  }, 5000);
+}
+
 function setupMPDHooks() {
+  console.log('MPD: Opening connection to ' + config.mpd.host + ':' + config.mpd.port);
+  mpd.open(config.mpd.host, config.mpd.port);
+
+  mpd.on('error', function() {
+    console.log('MPD: error');
+    onMPDFail();
+  });
+
+  mpd.on('disconnect', function() {
+    console.log('MPD: disconnected');
+    onMPDFail();
+  });
+
   mpd.on('connect', function() {
     console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' + mpd.socket.address().port);
     mpd.can_send = true;
-    mpd.socket.setTimeout(10000, onMPDFail);
     // Setup MPD password if needed
     if(config.mpd.password) {
       mpd.send('password ' + config.mpd.password, function(r) {
@@ -32,18 +56,6 @@ function setupMPDHooks() {
   });
 }
 
-function onMPDFail() {
-  console.log('MPD: Connection to MPD failed.');
-  mpd.can_send = false;
-  if(mpd.socket) mpd.socket.destroy();
-  setTimeout(function() {
-    setupMPDHooks();
-    mpd.can_send = true;
-  }, 5000);
-}
-
-mpd.on('error', onMPDFail);
-mpd.on('disconnect', onMPDFail);
 setupMPDHooks();
 
 var app = module.exports = express.createServer();
@@ -121,6 +133,11 @@ app.get('/', routes.index);
 // MPD
 app.all('/mpd/*', function(req, res, next) {
   if(mpd.can_send) {
+    mpd.socket.setTimeout(20000, function() {
+      res.send(408);
+      console.log('MPD: timed out');
+      onMPDFail();
+    });
     next();
   } else {
     res.send(204);
