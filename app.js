@@ -16,26 +16,28 @@ var express = require('express'),
     crypto = require('crypto'),
     CookieStore = require('cookie-sessions');
 
-// Setup MPD password if needed
-if(config.mpd.password) {
-  mpd.on('connect', function() {
-    mpd.send('password ' + config.mpd.password, function(r) {
-      console.log('MPD: Sent password to server. ' + r._OK ? 'Authed' : 'Failed');
-    })
-  });
-}
-
-mpd.on('connect', function() {
-  mpd.can_send = true;
-});
+// Set up MPD hooks
 
 function onMPDFail() {
+  console.log('MPD: Connection to MPD failed.');
   mpd.can_send = false;
   if(mpd.socket) mpd.socket.destroy();
   setTimeout(function() {
     mpd.can_send = true;
   }, 5000);
 }
+
+mpd.on('connect', function() {
+  console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' mpd.socket.address().port);
+  mpd.can_send = true;
+  mpd.socket.setTimeout(10000, onMPDFail);
+  // Setup MPD password if needed
+  if(config.mpd.password) {
+    mpd.send('password ' + config.mpd.password, function(r) {
+      console.log('MPD: Sent password to server. ' + r._OK ? 'Authed' : 'Failed');
+    })
+  }
+});
 
 mpd.on('error', onMPDFail);
 mpd.on('disconnect', onMPDFail);
@@ -96,10 +98,6 @@ app.configure('development', function(){
 app.configure('production', function(){
   app.use(express.errorHandler());
 });
-
-
-
-
 
 // Catch-all for auth - Force redirect to /login for all urls but /login when not logged in
 
