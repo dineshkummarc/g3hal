@@ -28,7 +28,7 @@ function onMPDFail() {
 }
 
 mpd.on('connect', function() {
-  console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' mpd.socket.address().port);
+  console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' + mpd.socket.address().port);
   mpd.can_send = true;
   mpd.socket.setTimeout(10000, onMPDFail);
   // Setup MPD password if needed
