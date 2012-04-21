@@ -13,16 +13,32 @@ var express = require('express'),
     mpd = new MPD(config.mpd.host, config.mpd.port),
     routes = require('./routes').routes(mpd),
     everyauth = require('everyauth'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    CookieStore = require('cookie-sessions');
 
 // Setup MPD password if needed
 if(config.mpd.password) {
   mpd.on('connect', function() {
     mpd.send('password ' + config.mpd.password, function(r) {
-      console.log(r);
+      console.log('MPD: Sent password to server. ' + r._OK ? 'Authed' : 'Failed');
     })
   });
 }
+
+mpd.on('connect', function() {
+  mpd.can_send = true;
+});
+
+function onMPDFail() {
+  mpd.can_send = false;
+  if(mpd.socket) mpd.socket.destroy();
+  setTimeout(function() {
+    mpd.can_send = true;
+  }, 5000);
+}
+
+mpd.on('error', onMPDFail);
+mpd.on('disconnect', onMPDFail);
 
 var app = module.exports = express.createServer();
 
@@ -68,12 +84,7 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(lessMW({ src: __dirname + '/public', compress: true }));
   app.use(express.static(__dirname + '/public'));
-  app.use(express.session({ 
-    secret: config.session_key, 
-    store: express.session.MemoryStore({
-      reapInterval: 60000 * 10
-    })
-  }));
+  app.use(CookieStore({ secret: config.session_key }));
   app.use(everyauth.middleware());
   app.use(app.router);
 });
@@ -93,6 +104,7 @@ app.configure('production', function(){
 // Catch-all for auth - Force redirect to /login for all urls but /login when not logged in
 
 app.all('/*', function(req, res, next) {
+  if(req.session === undefined) req.session = {};
   if (req.loggedIn || req.url === '/login') {
     next();
   } else {
@@ -105,6 +117,13 @@ app.all('/*', function(req, res, next) {
 app.get('/', routes.index);
 
 // MPD
+app.all('/mpd/*', function(req, res, next) {
+  if(mpd.can_send) {
+    next();
+  } else {
+    res.send(204);
+  }
+});
 app.post('/mpd/play', routes.mpd.play);
 app.post('/mpd/stop', routes.mpd.stop);
 app.post('/mpd/update', routes.mpd.update);

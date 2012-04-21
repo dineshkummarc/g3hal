@@ -31,6 +31,7 @@ $(function() {
 		}, 2000);
 	}
 
+	var last_song_id;
 	var updateSongInfo = throttle(function() {
 		$.getJSON('/mpd/status')
 		.success(function(data) {
@@ -57,7 +58,6 @@ $(function() {
 
 				var song_length = data.time.split(':')[1],
 					progress = Math.round((data.elapsed / song_length) * 100);
-
 				if(progress > 100) progress = 100;
 
 				$('#progress .bar').css({ width: progress + '%' });
@@ -66,6 +66,10 @@ $(function() {
 					$('#play').addClass('disabled');
 					$('#stop').removeClass('disabled');
 					$('#state').text('Playing');
+				}
+
+				if(data.state === 'play' || data.state === 'pause' && data.songid !== last_song_id) {
+					last_song_id = data.songid;
 					$.getJSON('/mpd/currentsong')
 					.success(function(data) {
 						if(data._OK) {
@@ -75,6 +79,10 @@ $(function() {
 					.fail(function(a,b,error) {
 						showErrors('Something went wrong trying to get the latest status from the server');
 					});
+				}
+
+				if(data.error) {
+					showErrors('MPD ERROR: ' + data.error);
 				}
 			}
 		})
