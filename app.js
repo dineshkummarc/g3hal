@@ -18,29 +18,33 @@ var express = require('express'),
 
 // Set up MPD hooks
 
+function setupMPDHooks() {
+  mpd.on('connect', function() {
+    console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' + mpd.socket.address().port);
+    mpd.can_send = true;
+    mpd.socket.setTimeout(10000, onMPDFail);
+    // Setup MPD password if needed
+    if(config.mpd.password) {
+      mpd.send('password ' + config.mpd.password, function(r) {
+        console.log('MPD: Sent password to server. ' + (r._OK ? 'Authed' : 'Failed'));
+      })
+    }
+  });
+}
+
 function onMPDFail() {
   console.log('MPD: Connection to MPD failed.');
   mpd.can_send = false;
   if(mpd.socket) mpd.socket.destroy();
   setTimeout(function() {
+    setupMPDHooks();
     mpd.can_send = true;
   }, 5000);
 }
 
-mpd.on('connect', function() {
-  console.log('MPD: Connected to server on ' + mpd.socket.address().address + ':' + mpd.socket.address().port);
-  mpd.can_send = true;
-  mpd.socket.setTimeout(10000, onMPDFail);
-  // Setup MPD password if needed
-  if(config.mpd.password) {
-    mpd.send('password ' + config.mpd.password, function(r) {
-      console.log('MPD: Sent password to server. ' + r._OK ? 'Authed' : 'Failed');
-    })
-  }
-});
-
 mpd.on('error', onMPDFail);
 mpd.on('disconnect', onMPDFail);
+setupMPDHooks();
 
 var app = module.exports = express.createServer();
 
