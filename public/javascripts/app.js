@@ -35,7 +35,7 @@ $(function() {
 	var updateSongInfo = throttle(function() {
 		$.getJSON('/mpd/status')
 		.success(function(data) {
-			if(data._OK) {
+			if(data && data._OK) {
 				if(data.state === 'stop') {
 					$('#state').text('Stopped');
 					$('#stop').addClass('disabled');
