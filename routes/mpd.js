@@ -6,13 +6,13 @@ exports.routes = function(mpd) {
 		mpd.socket.setTimeout(60000, function() {
 			res.send(408);
 			console.log('MPD: timed out');
-			onMPDFail();
+			mpd.onMPDFail();
 		});
 		mpd.send(cmd, function(r) {
 			try { 
 				res.json(r, r._OK ? 200 : 400); 
 			} catch (e) {
-				
+
 			}
 			mpd.socket.setTimeout(0);
 		});

@@ -18,30 +18,30 @@ var express = require('express'),
 
 // Set up MPD hooks
 
-function onMPDFail() {
+mpd.onMPDFail = function() {
 	mpd.can_send = false;
 	if(mpd.socket && mpd.isOpen) {
 		mpd.socket.end();
 		mpd.isOpen = false;
 	}
 	setTimeout(function() {
-		setupMPDHooks();
+		mpd.setupMPDHooks();
 		mpd.can_send = true;
 	}, 5000);
 }
 
-function setupMPDHooks() {
+mpd.setupMPDHooks = function() {
 	console.log('MPD: Opening connection to ' + config.mpd.host + ':' + config.mpd.port);
 	mpd.open(config.mpd.host, config.mpd.port);
 
 	mpd.on('error', function() {
 		console.log('MPD: error');
-		onMPDFail();
+		mpd.onMPDFail();
 	});
 
 	mpd.on('disconnect', function() {
 		console.log('MPD: disconnected');
-		onMPDFail();
+		mpd.onMPDFail();
 	});
 
 	mpd.on('connect', function() {
@@ -56,7 +56,7 @@ function setupMPDHooks() {
 	});
 }
 
-setupMPDHooks();
+mpd.setupMPDHooks();
 
 var app = module.exports = express.createServer();
 
