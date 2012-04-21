@@ -34,7 +34,7 @@ $(function() {
 	var last_song_id,
 		awaiting_update = false;
 	var updateSongInfo = throttle(function() {
-		return if awaiting_update;
+		if(awaiting_update) return;
 		awaiting_update = true;
 		$.getJSON('/mpd/status')
 		.success(function(data) {
