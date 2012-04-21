@@ -2,64 +2,40 @@ exports.routes = function(mpd) {
 
 	var routes = {};
 
-	routes.stop = function(req, res) {
+	function doMPDCmd(cmd, req, res) {
 		mpd.socket.setTimeout(60000, function() {
 			res.send(408);
 			console.log('MPD: timed out');
 			onMPDFail();
 		});
-		mpd.send('stop', function(r) {
-			if(!res._headerSent) res.json(r, r._OK ? 200 : 400);
+		mpd.send(cmd, function(r) {
+			try { 
+				res.json(r, r._OK ? 200 : 400); 
+			} catch (e) {
+				
+			}
 			mpd.socket.setTimeout(0);
 		});
+	}
+
+	routes.stop = function(req, res) {
+		doMPDCmd('stop', req, res);
 	};
 
 	routes.play = function(req, res) {
-		mpd.socket.setTimeout(60000, function() {
-			res.send(408);
-			console.log('MPD: timed out');
-			onMPDFail();
-		});
-		mpd.send('play', function(r) {
-			if(!res._headerSent) res.json(r, r._OK ? 200 : 400);
-			mpd.socket.setTimeout(0);
-		});
+		doMPDCmd('play', req, res);
 	};
 
 	routes.status = function(req, res) {
-		mpd.socket.setTimeout(60000, function() {
-			res.send(408);
-			console.log('MPD: timed out');
-			onMPDFail();
-		});
-		mpd.send('status', function(r) {
-			if(!res._headerSent) res.json(r, r._OK ? 200 : 400);
-			mpd.socket.setTimeout(0);
-		});
+		doMPDCmd('status', req, res);
 	};
 
 	routes.currentsong = function(req, res) {
-		mpd.socket.setTimeout(60000, function() {
-			res.send(408);
-			console.log('MPD: timed out');
-			onMPDFail();
-		});
-		mpd.send('currentsong', function(r) {
-			if(!res._headerSent) res.json(r, r._OK ? 200 : 400);
-			mpd.socket.setTimeout(0);
-		});
+		doMPDCmd('currentsong', req, res);
 	};
 
 	routes.update = function(req, res) {
-		mpd.socket.setTimeout(60000, function() {
-			res.send(408);
-			console.log('MPD: timed out');
-			onMPDFail();
-		});
-		mpd.send('update', function(r) {
-			if(!res._headerSent) res.json(r, r._OK ? 200 : 400);
-			mpd.socket.setTimeout(0);
-		});
+		doMPDCmd('update', req, res);
 	};
 
 	return routes;
